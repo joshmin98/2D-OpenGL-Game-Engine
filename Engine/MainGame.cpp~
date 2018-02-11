@@ -1,0 +1,167 @@
+#include "MainGame.h"
+#include "Errors.h"
+#include <iostream>
+#include <string>
+
+MainGame::MainGame()
+    : m_window(nullptr), m_width(800), m_height(600),
+      m_gameState(GameState::PLAY), m_time(0.0f), m_maxFPS(60.0f) {}
+
+void MainGame::initSystems() {
+  SDL_Init(SDL_INIT_EVERYTHING);
+
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+  m_window =
+      SDL_CreateWindow("test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                       m_width, m_height, SDL_WINDOW_OPENGL);
+
+  if (m_window == nullptr) {
+    fatalError("SDL Window could not be created!");
+  }
+
+  SDL_GLContext glContext = SDL_GL_CreateContext(m_window);
+  if (glContext == nullptr) {
+    fatalError("SDL GL Context could not be created!");
+  }
+
+  GLenum error = glewInit();
+  if (error != GLEW_OK) {
+    fatalError("Could not initialize GLEW!");
+  }
+
+  printf("*** OpenGL version: %s ***\n", glGetString(GL_VERSION));
+
+  glClearColor(0.0f, 1.0f, 1.0f, 1.0f);
+
+  // turn on vsync
+  SDL_GL_SetSwapInterval(1);
+
+  initShaders();
+}
+
+void MainGame::initShaders() {
+  m_colorProgram.compileShaders("../res/colorShading.vs",
+                                "../res/colorShading.fs");
+  m_colorProgram.addAttribute("vertexPosition");
+  m_colorProgram.addAttribute("vertexColor");
+  m_colorProgram.addAttribute("vertexUV");
+  m_colorProgram.linkShaders();
+}
+
+void MainGame::gameLoop() {
+  while (m_gameState != GameState::EXIT) {
+    // used for frame-time measuring
+    float startTicks = SDL_GetTicks();
+
+    processInput();
+    m_time += 0.01;
+    drawGame();
+    calculateFPS();
+
+    /// print once every 10 frames
+    static int frameCounter = 0;
+    frameCounter++;
+    if (frameCounter == 10) {
+      std::cout << m_fps << std::endl;
+      frameCounter = 0;
+    }
+
+    float frameTicks = SDL_GetTicks() - startTicks;
+    // limit max fps
+    if (1000.0f / m_maxFPS > frameTicks) {
+      SDL_Delay((1000.0f / m_maxFPS) - frameTicks);
+    }
+  }
+}
+
+void MainGame::processInput() {
+  SDL_Event e;
+  while (SDL_PollEvent(&e)) {
+    switch (e.type) {
+    case SDL_QUIT: {
+      m_gameState = GameState::EXIT;
+      break;
+    }
+    case SDL_MOUSEMOTION: {
+      std::cout << e.motion.x << ", " << e.motion.y << std::endl;
+      break;
+    }
+    default:
+      break;
+    }
+  }
+}
+
+void MainGame::drawGame() {
+  glClearDepth(1.0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  m_colorProgram.use();
+
+  GLuint timeLocation = m_colorProgram.getUniformLocation("time");
+  glUniform1f(timeLocation, m_time);
+
+  // drawing sprites
+  for (unsigned int i = 0; i < m_sprites.size(); ++i) {
+    m_sprites[i]->draw();
+  }
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  GLint textureLocation = m_colorProgram.getUniformLocation("mySampler");
+  glUniform1i(textureLocation, 0);
+
+  m_colorProgram.unUse();
+
+  SDL_GL_SwapWindow(m_window);
+}
+
+void MainGame::run() {
+  initSystems();
+  m_sprites.push_back(new Sprite());
+  m_sprites.back()->init(-1.0f, -1.0f, 1.0f, 1.0f, "../res/char.png");
+
+  m_sprites.push_back(new Sprite());
+  m_sprites.back()->init(0.0f, -1.0f, 1.0f, 1.0f, "../res/char.png");
+
+  gameLoop();
+}
+
+void MainGame::calculateFPS() {
+  static const unsigned int NUM_SAMPLES = 100;
+  static float frameTimes[NUM_SAMPLES];
+  static unsigned int currentFrame = 0;
+
+  static float previousTicks = SDL_GetTicks();
+  float currentTicks;
+  currentTicks = SDL_GetTicks();
+
+  m_frameTime = currentTicks - previousTicks;
+  frameTimes[currentFrame % NUM_SAMPLES] = m_frameTime;
+
+  previousTicks = currentTicks;
+
+  unsigned int count;
+  currentFrame++;
+
+  if (currentFrame < NUM_SAMPLES) {
+    count = currentFrame;
+  } else {
+    count = NUM_SAMPLES;
+  }
+
+  float frameTimeAverage = 0.0f;
+  for (unsigned int i = 0; i < count; ++i) {
+    frameTimeAverage += frameTimes[i];
+  }
+  frameTimeAverage /= count;
+
+  if (frameTimeAverage > 0) {
+    m_fps = 1000.0f / frameTimeAverage;
+  } else {
+    m_fps = 60.0f;
+  }
+}
+
+MainGame::~MainGame() {}

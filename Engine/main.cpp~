@@ -1,0 +1,6 @@
+#include "MainGame.h"
+
+int main(int argc, char *argv[argc]) {
+  MainGame maingame;
+  return 0;
+}

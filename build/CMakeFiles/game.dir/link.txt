@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -g -std=c++11   CMakeFiles/game.dir/src/Agent.cpp.o CMakeFiles/game.dir/src/Enemy.cpp.o CMakeFiles/game.dir/src/Friendly.cpp.o CMakeFiles/game.dir/src/Level.cpp.o CMakeFiles/game.dir/src/MainGame.cpp.o CMakeFiles/game.dir/src/Player.cpp.o CMakeFiles/game.dir/src/Projectile.cpp.o CMakeFiles/game.dir/src/main.cpp.o  -o game Engine/libEngine.a -lSDL2 -lGL -lGLEW 
