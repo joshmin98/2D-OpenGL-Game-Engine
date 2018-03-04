@@ -2,7 +2,9 @@
 #include <iostream>
 
 int main(int argc, char** argv) {
-  MainGame mainGame;
-  mainGame.run();
+  MainGame *mainGame = new MainGame();
+  mainGame->run();
+  delete mainGame;
+  mainGame = nullptr;
   return 0;
 }

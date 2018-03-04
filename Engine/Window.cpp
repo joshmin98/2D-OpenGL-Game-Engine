@@ -7,23 +7,15 @@ Window::Window() {}
 
 int Window::createWindow(std::string title, int width, int height,
                          unsigned int currentFlags) {
-  Uint32 flags = SDL_WINDOW_OPENGL;
+  m_sdlWindow = SDL_CreateWindow(title.c_str(),
+                                 SDL_WINDOWPOS_CENTERED,
+                                 SDL_WINDOWPOS_CENTERED,
+                                 width, height,
+                                 SDL_WINDOW_OPENGL |
+                                     SDL_WINDOW_SHOWN |
+                                     SDL_WINDOW_INPUT_GRABBED);
 
-  if (currentFlags & INVISIBLE) {
-    flags |= SDL_WINDOW_HIDDEN;
-  }
-
-  if (currentFlags & FULLSCREEN) {
-    flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-  }
-
-  if (currentFlags & BORDERLESS) {
-    flags |= SDL_WINDOW_BORDERLESS;
-  }
-
-  m_sdlWindow = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED,
-                                 SDL_WINDOWPOS_CENTERED, width, height,
-                                 SDL_WINDOW_OPENGL | flags);
+  SDL_ShowCursor(SDL_DISABLE);
 
   if (m_sdlWindow == nullptr) {
     fatalError("SDL Window could not be created!");

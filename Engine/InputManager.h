@@ -3,6 +3,9 @@
 
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <SDL2/SDL.h>
+
+
 
 namespace Engine {
 
@@ -11,16 +14,22 @@ public:
   InputManager();
   ~InputManager();
 
-  void pressKey(unsigned int keyID);
-  void releaseKey(unsigned int keyID);
-  bool isKeyPressed(unsigned int keyID);
-  void setMouseCoords(float x, float y);
+  void handleKeyboardInput();
+  bool isKeyboardKeyPressed(SDL_Keycode keyID);
 
-  glm::vec2 getMouseCoords() const { return m_mouseCoords; }
+  bool isUpButtonPressed();
+  bool isDownButtonPressed();
+  bool isLeftButtonPressed();
+  bool isRightButtonPressed();
+
+  // TODO: temporarily - just for quick exit
+  bool isQuitButtonPressed();
 
 private:
-  std::unordered_map<unsigned int, bool> m_keyMap;
-  glm::vec2 m_mouseCoords;
+  void keyboardKeyPressed(SDL_Keycode keyID);
+  void keyboardKeyReleased(SDL_Keycode keyID);
+
+  std::unordered_map<SDL_Keycode, bool> m_keyboardKeys;
 };
 
 } // namespace Engine
