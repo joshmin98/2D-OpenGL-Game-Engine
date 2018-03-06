@@ -10,7 +10,6 @@
 #include <GLSLProgram.h>
 #include <GLTexture.h>
 #include <InputManager.h>
-#include <SDL2/SDL.h>
 #include <Sprite.h>
 #include <SpriteBatch.h>
 #include <Timing.h>
@@ -48,8 +47,6 @@ private:
   Engine::FpsLimiter m_fpsLimiter;
 
   std::vector<Projectile> m_projectiles;
-
-  std::vector<Level*> m_levels;
 
   float m_time;
   float m_maxFPS;

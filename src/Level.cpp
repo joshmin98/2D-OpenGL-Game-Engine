@@ -18,4 +18,6 @@ Level::Level(const std::string& fileName) {
   }
 }
 
-Level::~Level() {}
+Level::~Level() {
+
+}
